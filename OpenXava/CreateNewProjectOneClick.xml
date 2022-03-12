@@ -66,6 +66,23 @@
 							 <replaceregexp file="../${project}/persistence/META-INF/persistence.xml" match="@database_user@" replace="${dbUser}" flags="g" />
 							 <replaceregexp file="../${project}/persistence/META-INF/persistence.xml" match="@database_password@" replace="${dbPassword}" flags="g" />
 							 <replaceregexp file="../${project}/persistence/META-INF/persistence.xml" match="@database_name@" replace="${dbName}" flags="g" />
+
+							 <echo message="setting revenge for tables to java"/>
+							 <copy file="hbm2java/mvn/pom.xml" tofile="../${project}/hbm2java/pom.xml"/>
+							 <copy file="hbm2java/mvn/src/main/resources/hibernate.cfg.xml" tofile="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml"/>
+							 <copy file="hbm2java/mvn/src/main/resources/hibernate.reveng.xml" tofile="../${project}/hbm2java/src/main/resources/hibernate.reveng.xml"/>
+							 <replaceregexp file="../${project}/hbm2java/pom.xml" match="@destdir@" replace="../src" flags="g" />
+							 <!-- <replaceregexp file="../${project}/hbm2java/pom.xml" match="@destdir@" replace="../src/com/yourcompany/${project}/model" flags="g" /> -->
+							 <!-- <replaceregexp file="../${project}/hbm2java/pom.xml" match="@hibernate_cfg_xml@" replace="../${project}/hbm2java/hibernate.cfg.xml" flags="g" /> -->
+							 <replaceregexp file="../${project}/hbm2java/pom.xml" match="@packagename@" replace="com.yourcompany.${project}.model" flags="g" />
+							 <!-- <replaceregexp file="../${project}/hbm2java/pom.xml" match="@revengfile@" replace="../${project}/hbm2java/hibernate.reveng.xml" flags="g" /> -->
+							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_host@" replace="${dbHost}" flags="g" />
+							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_port@" replace="${dbPort}" flags="g" />
+							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_user@" replace="${dbUser}" flags="g" />
+							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_password@" replace="${dbPassword}" flags="g" />
+							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_name@" replace="${dbName}" flags="g" />
+							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.reveng.xml" match="@database_name@" replace="${dbName}" flags="g" />
+
 							 <ant antfile="../${project}/build.xml" target="compile"/>
 		     </then>
 		 </if>
