@@ -67,7 +67,7 @@
             <classpath>
               <path location="${project.build.sourceDirectory}/classes"/>
             </classpath>
-            <!-- <configuration configurationfile="@hibernate_cfg_xml@"/> -->
+            <!-- <configuration configurationfile="src/main/resources/hibernate.cfg.xml"/> -->
             <jdbcconfiguration packagename="@packagename@" revengfile="src/main/resources/hibernate.reveng.xml"/>
             <hbm2java jdk5="true" ejb3="true"/>
           </hibernatetool>

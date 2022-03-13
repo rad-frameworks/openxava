@@ -110,6 +110,7 @@ public class SchemaTool {
 
 			if (annotatedClasses != null) {
 				for (Class annotatedClass: annotatedClasses) {
+					System.out.println(annotatedClass);
 					metadata.addAnnotatedClass(annotatedClass);
 				}
 			}
@@ -117,11 +118,12 @@ public class SchemaTool {
 				//TODO: parametrize using some openxava properties
 				if(System.getenv("DISABLE_GALLERY_IMAGE")==null){
 					metadata.addResource("GalleryImage.hbm.xml");
-					for (ManagedType type: XPersistence.getManager().getMetamodel().getManagedTypes()) {
-						Class<?> clazz = type.getJavaType();
-						if (clazz == null || clazz.isInterface()) continue;
-						metadata.addAnnotatedClass(clazz);
-					}
+				}
+				for (ManagedType type: XPersistence.getManager().getMetamodel().getManagedTypes()) {
+					Class<?> clazz = type.getJavaType();
+					System.out.println(clazz);
+					if (clazz == null || clazz.isInterface()) continue;
+					metadata.addAnnotatedClass(clazz);
 				}
 			}
 

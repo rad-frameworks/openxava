@@ -1,5 +1,6 @@
 ## Steps
 
+- export DISABLE_GALLERY_IMAGE=true
 - create project
 ant -f OpenXava/CreateNewProjectOneClick.xml
 - create database
@@ -8,7 +9,15 @@ ant "updateSchema" -f demo/build.xml
 cd $projet/hbm2java
 mvn clean hibernate3:hbm2java
 - build
+cd $project
+ant createWar -Ddist.base.dir=$(pwd)
 - deploy
+
+
+ant -f OpenXava/CreateNewProjectOneClick.xml
+ant updateModel
+ant compile
+ant createWar -Ddist.base.dir=$(pwd)
 
 https://www.codejava.net/frameworks/hibernate/how-to-customize-hibernate-reverse-engineering-code-generation  
 https://docs.jboss.org/tools/latest/en/hibernatetools/html/reverseengineering.html
@@ -30,6 +39,8 @@ https://stackoverflow.com/questions/2083727/how-to-configure-maven-hbm2hbmxml-an
 https://gist.github.com/lotabout/34566cb1f2d2038c55e1
 https://docs.jboss.org/tools/OLD/3.0.0.GA/en/hibernatetools/html/reverseengineering.html
 https://stackoverflow.com/questions/57019319/how-to-generate-model-code-for-single-db-using-hibernate-tools-through-hiberna
+https://stackoverflow.com/questions/23530013/netbeans-hibernate-reverse-engineering-data-types-mismatch
+https://docs.jboss.org/tools/latest/en/hibernatetools/html/reverseengineering.html
 
 HibernateToolTask revenge
 
@@ -39,3 +50,22 @@ Nowadays, nobody uses the database for binaries or images
 ```
 export DISABLE_GALLERY_IMAGE=true
 ```
+
+<target name="updateModel">
+    <exec dir="./hbm2java" executable="sh">
+        <arg line="-c 'mvn clean hibernate3:hbm2java'" />
+    </exec>
+</target>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-reverse-engineering SYSTEM "http://hibernate.org/dtd/hibernate-reverse-engineering-3.0.dtd">
+
+<hibernate-reverse-engineering>
+  <schema-selection match-catalog="openxava" />
+  <type-mapping>
+      <sql-type jdbc-type="CHAR" hibernate-type="char" />
+      <sql-type jdbc-type="LONGVARCHAR" hibernate-type="java.lang.String" />
+  </type-mapping>
+</hibernate-reverse-engineering>
+
+https://stackoverflow.com/questions/48566481/longvarchar-in-hibernate

@@ -1,0 +1,7 @@
+  <target name="updateModel">
+      <exec dir="./hbm2java" executable="sh">
+          <arg line="-c 'mvn clean hibernate3:hbm2java'" />
+      </exec>
+  </target>
+
+</project>

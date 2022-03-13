@@ -5,7 +5,7 @@
 <project name="CreateNewProject" default="createNewProject" basedir=".">
 	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
 
-	<input addproperty="project" message="What is your project name?"/>
+	<input addproperty="project" message="What is your project name?" defaultvalue="fff"/>
 	<property name="datasource" value="${project}DS"/>
 	<!-- If you change this revise createAppLauncher of build.xml -->
 	<property name="database" value="${project}DB"/>
@@ -55,10 +55,12 @@
 							 <replaceregexp file="../${project}/build.xml" match="value=&quot;junit&quot;" replace="value=&quot;update&quot;"/>
 							 <echo message="junit driver"/>
 							 <copy file="lib/hsqldb.jar" tofile="../${project}/web/WEB-INF/lib/hsqldb.jar"/>
+							 <copy file="lib/mysql-connector-java-8.0.28.jar" tofile="../${project}/web/WEB-INF/lib/mysql-connector-java-8.0.28.jar"/>
 							 <echo message="change to modern database strategy "/>
 							 <delete file="../${project}/persistence/GalleryImage.hbm.xml" />
 							 <delete file="../${project}/persistence/hibernate.cfg.xml" />
 							 <delete file="../${project}/persistence/META-INF/persistence.xml" />
+							 <delete file="../${project}/src/com/yourcompany/${project}/model/YourFirstEntity.java" />
 							 <copy file="project-templates/en-one-click/persistence-mysql.xml" tofile="../${project}/persistence/META-INF/persistence.xml"/>
 							 <echo message="setting database parameters"/>
 							 <replaceregexp file="../${project}/persistence/META-INF/persistence.xml" match="@database_host@" replace="${dbHost}" flags="g" />
@@ -72,7 +74,6 @@
 							 <copy file="hbm2java/mvn/src/main/resources/hibernate.cfg.xml" tofile="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml"/>
 							 <copy file="hbm2java/mvn/src/main/resources/hibernate.reveng.xml" tofile="../${project}/hbm2java/src/main/resources/hibernate.reveng.xml"/>
 							 <replaceregexp file="../${project}/hbm2java/pom.xml" match="@destdir@" replace="../src" flags="g" />
-							 <!-- <replaceregexp file="../${project}/hbm2java/pom.xml" match="@destdir@" replace="../src/com/yourcompany/${project}/model" flags="g" /> -->
 							 <!-- <replaceregexp file="../${project}/hbm2java/pom.xml" match="@hibernate_cfg_xml@" replace="../${project}/hbm2java/hibernate.cfg.xml" flags="g" /> -->
 							 <replaceregexp file="../${project}/hbm2java/pom.xml" match="@packagename@" replace="com.yourcompany.${project}.model" flags="g" />
 							 <!-- <replaceregexp file="../${project}/hbm2java/pom.xml" match="@revengfile@" replace="../${project}/hbm2java/hibernate.reveng.xml" flags="g" /> -->
@@ -82,18 +83,19 @@
 							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_password@" replace="${dbPassword}" flags="g" />
 							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_name@" replace="${dbName}" flags="g" />
 							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.reveng.xml" match="@database_name@" replace="${dbName}" flags="g" />
-
+							 <loadfile property="updateModelTaskString"  srcFile="project-templates/en-one-click/updateModelTaskString.xml"/>
+							 <replaceregexp file="../${project}/build.xml" match="&#60;/project&#62;" replace="${updateModelTaskString}"/>
 							 <ant antfile="../${project}/build.xml" target="compile"/>
 		     </then>
 		 </if>
 	</target>
 
-	<input addproperty="dbEngine" message="What is your database engine?"/>
-	<input addproperty="dbHost" message="What is your database host?"/>
-	<input addproperty="dbPort" message="What is your database port?"/>
-	<input addproperty="dbName" message="What is your database name?"/>
-	<input addproperty="dbUser" message="What is your database user?"/>
-	<input addproperty="dbPassword" message="What is your database password?"/>
+	<input addproperty="dbEngine" message="What is your database engine?" defaultvalue="mysql"/>
+	<input addproperty="dbHost" message="What is your database host?" defaultvalue="192.168.0.22"/>
+	<input addproperty="dbPort" message="What is your database port?" defaultvalue="3306"/>
+	<input addproperty="dbName" message="What is your database name?" defaultvalue="openxava"/>
+	<input addproperty="dbUser" message="What is your database user?" defaultvalue="root"/>
+	<input addproperty="dbPassword" message="What is your database password?" defaultvalue="secret"/>
 
 	<target name="check-antcontrib">
 		<available file="lib/ant-contrib-1.0b3.jar" property="ant-contrib.exist"/>
