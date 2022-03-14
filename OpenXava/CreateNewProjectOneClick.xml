@@ -47,12 +47,14 @@
 		<if>
 		     <equals arg1="${dbEngine}" arg2="mysql" />
 		     <then>
-		           <!-- <antcall target="update.back" /> -->
+
 							 <echo message="customizing openxava..."/>
 							 <echo message="setting database driver"/>
 							 <replaceregexp file="../${project}/build.xml" match="../OpenXava/lib/hsqldb.jar" replace="../OpenXava/lib/mysql-connector-java-8.0.28.jar"/>
+
 							 <echo message="setting persistence.unit for update schema"/>
 							 <replaceregexp file="../${project}/build.xml" match="value=&quot;junit&quot;" replace="value=&quot;update&quot;"/>
+
 							 <echo message="junit driver"/>
 							 <copy file="lib/hsqldb.jar" tofile="../${project}/web/WEB-INF/lib/hsqldb.jar"/>
 							 <copy file="lib/mysql-connector-java-8.0.28.jar" tofile="../${project}/web/WEB-INF/lib/mysql-connector-java-8.0.28.jar"/>
@@ -60,8 +62,8 @@
 							 <delete file="../${project}/persistence/GalleryImage.hbm.xml" />
 							 <delete file="../${project}/persistence/hibernate.cfg.xml" />
 							 <delete file="../${project}/persistence/META-INF/persistence.xml" />
-							 <delete file="../${project}/src/com/yourcompany/${project}/model/YourFirstEntity.java" />
 							 <copy file="project-templates/en-one-click/persistence-mysql.xml" tofile="../${project}/persistence/META-INF/persistence.xml"/>
+
 							 <echo message="setting database parameters"/>
 							 <replaceregexp file="../${project}/persistence/META-INF/persistence.xml" match="@database_host@" replace="${dbHost}" flags="g" />
 							 <replaceregexp file="../${project}/persistence/META-INF/persistence.xml" match="@database_port@" replace="${dbPort}" flags="g" />
@@ -74,18 +76,24 @@
 							 <copy file="hbm2java/mvn/src/main/resources/hibernate.cfg.xml" tofile="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml"/>
 							 <copy file="hbm2java/mvn/src/main/resources/hibernate.reveng.xml" tofile="../${project}/hbm2java/src/main/resources/hibernate.reveng.xml"/>
 							 <replaceregexp file="../${project}/hbm2java/pom.xml" match="@destdir@" replace="../src" flags="g" />
-							 <!-- <replaceregexp file="../${project}/hbm2java/pom.xml" match="@hibernate_cfg_xml@" replace="../${project}/hbm2java/hibernate.cfg.xml" flags="g" /> -->
 							 <replaceregexp file="../${project}/hbm2java/pom.xml" match="@packagename@" replace="com.yourcompany.${project}.model" flags="g" />
-							 <!-- <replaceregexp file="../${project}/hbm2java/pom.xml" match="@revengfile@" replace="../${project}/hbm2java/hibernate.reveng.xml" flags="g" /> -->
 							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_host@" replace="${dbHost}" flags="g" />
 							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_port@" replace="${dbPort}" flags="g" />
 							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_user@" replace="${dbUser}" flags="g" />
 							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_password@" replace="${dbPassword}" flags="g" />
 							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.cfg.xml" match="@database_name@" replace="${dbName}" flags="g" />
 							 <replaceregexp file="../${project}/hbm2java/src/main/resources/hibernate.reveng.xml" match="@database_name@" replace="${dbName}" flags="g" />
-							 <loadfile property="updateModelTaskString"  srcFile="project-templates/en-one-click/updateModelTaskString.xml"/>
-							 <replaceregexp file="../${project}/build.xml" match="&#60;/project&#62;" replace="${updateModelTaskString}"/>
-							 <ant antfile="../${project}/build.xml" target="compile"/>
+
+							 <echo message="build enhancer"/>
+							 <loadfile property="additionalBuildString"  srcFile="project-templates/en-one-click/additional-build.xml"/>
+							 <replaceregexp file="../${project}/build.xml" match="&#60;/project&#62;" replace="${additionalBuildString}"/>
+
+							 <echo message="docker"/>
+							 <copy file="project-templates/en-one-click/Dockerfile" tofile="../${project}/Dockerfile"/>
+							 <copy file="project-templates/en-one-click/entrypoint.sh" tofile="../${project}/entrypoint.sh"/>
+							 <copy file="project-templates/en-one-click/.dockerignore" tofile="../${project}/.dockerignore"/>
+							 <replaceregexp file="../${project}/Dockerfile" match="@project@" replace="${project}" flags="g" />
+							 <replaceregexp file="../${project}/.dockerignore" match="@project@" replace="${project}" flags="g" />
 		     </then>
 		 </if>
 	</target>

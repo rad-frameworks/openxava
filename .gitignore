@@ -1,0 +1,16 @@
+# Ignore everything
+/*
+# But not these files
+!.gitignore
+!Addons
+!InvoiceDemo
+!OpenXava
+!OpenXava
+!OpenXavaDoc
+!OpenXavaTest
+!openxava.properties
+!readme.md
+
+OpenXava/lib/ant-contrib-1.0b3.jar
+OpenXava/lib/mysql-connector-java-8.0.28.jar
+OpenXava/web/WEB-INF/lib/openxava.jar
