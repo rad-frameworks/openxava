@@ -15,12 +15,17 @@ public class InvoicesByYearTest extends ModuleTestBase {
 		super(testName, "InvoicesByYear");		
 	}
 			
-	public void testCollectionCountInSectionNotRefreshedOnChangeCollection() throws Exception {
+	public void testCollectionCountInSectionNotRefreshedOnChangeCollection_collectionTotalsInTransientClassRecalculated() throws Exception {
 		assertCollectionRowCount("invoices", 0);
 		assertInvoicesCountInSection(0);
 		setValue("year", "2004");
 		assertCollectionRowCount("invoices", 5);
 		assertInvoicesCountInSection(5);
+		
+		assertTotalInCollection("invoices", "total", "9,060.10");
+		execute("InvoicesByYear.setModel");
+		setValue("year", "2002");
+		assertTotalInCollection("invoices", "total", "2,900.00");
 	}
 	
 	private void assertInvoicesCountInSection(int expectedCount) throws Exception {

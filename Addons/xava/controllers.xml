@@ -79,6 +79,8 @@
 
 	<controller name="User">
 		<extends controller="Typical"/>
+		<action name="init" after-each-request="true" hidden="true"
+        	class="com.openxava.naviox.actions.InitUserAction"/>
 		<action name="save" mode="detail"
 			by-default="if-possible"
 			class="com.openxava.naviox.actions.SaveUserAction"
@@ -172,7 +174,7 @@
 			<set property="resetAfter" value="false"/>
 		</action>			
 			
-		<action name="delete" mode="detail" confirm="true"
+		<action name="delete" mode="detail" confirm="true" available-on-new="false" 
 			class="com.openxava.naviox.actions.DeleteOrganizationAction"/>
 		
 		<action name="go" in-each-row="true" mode="NONE" icon="exit-to-app"			

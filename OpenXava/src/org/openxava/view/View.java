@@ -1155,6 +1155,7 @@ public class View implements java.io.Serializable {
 		subviews.put(member.getName(), newView);
 	} 
 
+
 	private Collection getDefaultListActionsForCollections() {
 		try {
 			if (!isDefaultListActionsForCollectionsIncluded()) return Collections.EMPTY_LIST; 
@@ -1229,13 +1230,13 @@ public class View implements java.io.Serializable {
 		return groupsViews;
 	}
 
-	private List<MetaProperty> namesToMetaProperties(View view, Collection names) throws XavaException {
+	private List<MetaProperty> namesToMetaProperties(View view, Collection names) throws XavaException {  
 		List<MetaProperty> metas = new ArrayList();
 		Iterator it = names.iterator();
 		while (it.hasNext()) {
-			String name = (String) it.next();			
+			String name = (String) it.next();
 			if (name.endsWith("+")) {
-				name = name.substring(0, name.length() - 1); 
+				name = name.substring(0, name.length() - 1);
 				if (view.isRepresentsCollection() && view.isCollectionFromModel()) {
 					view.addCollectionDefaultSumProperty(name); 
 				}
@@ -1259,7 +1260,7 @@ public class View implements java.io.Serializable {
 		}
 		return metas;
 	}
-
+	
 	private boolean hasSubviews() {		
 		return subviews != null && !subviews.isEmpty();		
 	}
@@ -1946,13 +1947,18 @@ public class View implements java.io.Serializable {
 				}
 				else {
 					Map key = getParent().getKeyValues();
-					if (hasNull(key)) {
-						collectionTotals = Collections.EMPTY_MAP;
+					
+					if (key.isEmpty() || hasNull(key)) { 
+						Object model = getParent().getModel();
+						if (model != null) getParent().updateModelFromView();
+						else model = getParent().getTransientPOJO();
+						collectionTotals = MapFacade.getValues(getParent().getModelName(), model, memberNames);
+						removeKeys(getParent().getMetaModel(), collectionTotals);
 					}
 					else {
 						try {
 							collectionTotals = MapFacade.getValues(getParent().getModelName(), key, memberNames);
-							removeKeys(getParent().getMetaModel(), collectionTotals); 
+							removeKeys(getParent().getMetaModel(), collectionTotals);
 						}
 						catch (javax.ejb.ObjectNotFoundException ex) {
 							collectionTotals = Collections.EMPTY_MAP;
@@ -2118,7 +2124,6 @@ public class View implements java.io.Serializable {
 			defaultSumProperties.append(',');
 			defaultSumProperties.append(property);
 		}
-		
 	}
 	
 	private Collection<String> getSumProperties() { 
@@ -2129,6 +2134,16 @@ public class View implements java.io.Serializable {
 	private Collection<String> loadSumProperties() { 
 		try {
 			String properties = getPreferences().get(SUM_PROPERTIES, defaultSumProperties==null?"":defaultSumProperties.toString());
+			if (defaultSumProperties != null) {
+				View rootView = getParent().getCollectionRootOrRoot();
+				for (String property: defaultSumProperties.toString().split(",")) {
+					String sumProperty = getMemberName() + "." + property.trim() + "_SUM_";
+					if (rootView.isPropertyUsedInCalculation(sumProperty)) {
+						if (!Is.emptyString(properties)) properties+= ",";
+						properties += property; 						
+					}
+				}
+			}
 			return Strings.toSet(properties);
 		}
 		catch (Exception ex) {
@@ -3040,9 +3055,10 @@ public class View implements java.io.Serializable {
 			if (firstLevel) {
 				if (!Is.emptyString(changedProperty)) {
 					getRoot().registeringExecutedActions = true;
-					try {		
-						propertyChanged(changedProperty);
-					}
+					try {	
+						if (isKeyEditable()) resetCollectionTotals(); // The isKeyEditable() is to improve performance 
+						propertyChanged(changedProperty);			  //   If you change it verify that InvoiceDetailsWithTotals does not
+					}												  //   reload totals in View.getCollectionTotals() on changing VAT. 
 					finally {
 						getRoot().registeringExecutedActions = false;		
 						resetExecutedActions();						

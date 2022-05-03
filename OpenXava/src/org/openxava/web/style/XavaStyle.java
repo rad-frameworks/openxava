@@ -1,6 +1,7 @@
 package org.openxava.web.style;
 
 import javax.servlet.http.*;
+
 import org.openxava.web.*;
 
 
@@ -86,13 +87,15 @@ public class XavaStyle extends Style {
 			r.append(' ');
 			r.append(getCollection());
 		}
-		r.append("'"); 
 		if (width == 100) { 
-			r.append(" style='width: calc(100% - 15px);'");			
+			r.append(' ');			
+			r.append(getFullFrame()); 
 		}
-		else if (width == 50) { // Two collections in a row
-			r.append(" style='overflow: auto; display: block; width: calc(50% - 38px);'"); 
-		}
+		else if (width == 50) { // Two frames in a row
+			r.append(' ');			
+			r.append(getHalfFrame()); 		
+		}		
+		r.append("'"); 
 		r.append(getFrameSpacing());
 		r.append(">");
 		r.append("<div class='");

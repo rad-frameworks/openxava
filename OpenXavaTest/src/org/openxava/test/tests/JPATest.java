@@ -1,13 +1,5 @@
 package org.openxava.test.tests;
 
-import java.math.*;
-import java.util.*;
-import java.util.stream.*;
-
-import javax.persistence.*;
-
-import org.apache.commons.beanutils.*;
-import org.hibernate.validator.*;
 import org.openxava.jpa.*;
 import org.openxava.test.model.*;
 import org.openxava.util.*;
@@ -33,7 +25,7 @@ public class JPATest extends TestCase {
 	protected void tearDown() throws Exception {
 		XPersistence.commit();
 	}
-		
+	
 	public void testConvertersAllPropertiesOnCreate() throws Exception { // One way to avoid nulls
 		Subfamily sf = new Subfamily();
 		sf.setNumber(77);

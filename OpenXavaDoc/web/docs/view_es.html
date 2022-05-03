@@ -3,9 +3,12 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>Vista - OpenXava</title>
     <link rel="stylesheet" href="static/style.css" type="text/css">
+    <link rel="stylesheet" href="highlight/highlight.css">
+    <script src="highlight/highlight.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
   </head>
   <body>
-    <div class="wiki" id="content_view" style="display: block;">
+    <div class="wiki" style="display: block;">
       <h1 id="toc0"><a name="Vista"></a> <span id="breadcrumbs"> <span id="openxava">
             <a href="https://www.openxava.org/"> <span>o</span>pen<span>x</span>ava
               </a> </span> / <a href="index_es.html">documentación</a> / </span>
@@ -10486,9 +10489,66 @@ class="br0">)</span> @NoCreate <span class="co1">// 2</span>
       En <em>condition</em> y <em>order</em> ponemos los nombres de las
       propiedades entre <em>${}</em> y los argumentos como <em>?</em>, los
       operadores de comparación son los de SQL.<br>
-      <em>Nuevo en v3.0.3:</em> Se pueden usar propiedades calificadas en <em>condition</em>
-      y <em>order</em> incluso si no están incluidas en <em>descriptionProperties</em>.
-      Es decir, podemos escribir una condición como esta:<br>
+      <div class="wiki" style="display: block;">En las referencias donde el <i>@DescriptionsList</i>
+        depende de otro <i>@DescriptionsList</i> con clave múltiple, puedes
+        poner un ? por cada valor de la clave. Es decir, si tienes una entidad <i>Almacen</i>
+        como esta:</div>
+      <div class="wiki" style="display: block;">
+        <pre><code class="java">@Entity @Getter @Setter
+@IdClass(AlmacenKey.class)
+public class Almacen {
+
+    @Id 
+    int codigoZona;
+
+    @Id 
+    int codigo;
+
+    @Column(length=40) @Required
+    String nombre;
+
+}
+</code></pre> </div>
+      <div class="wiki" style="display: block;">Con una clave compuesta que
+        incluye <i>codigoZona</i> y <i>codigo</i>. Y en otra entidad tienes
+        dos <i>@DescriptionsLists</i> como estos:</div>
+      <div class="wiki" style="display: block;">
+        <pre><code class="java">@ManyToOne
+@DescriptionsList
+Warehouse almacenPrincipal;
+	
+@ManyToOne
+@DescriptionsList(
+    depends="almacenPrincipal", 
+    condition="${almacen.codigoZona} = ? and ${almacen.codigo} = ?") <br>    // condition="${almacen} = ?" // A partir de v6.6.3
+Carrier transportistaDefecto;
+</code></pre> </div>
+      <div class="wiki" style="display: block;">Donde <i>transportistaDefecto</i>
+        depende de <i>almacenPrincipal</i> (con su clave compuesta). El truco
+        está en usar dos ? y comparar los dos valores de la clave, <i>codigoZona</i>
+        y <i>codigo</i> en <i>condition</i>.</div>
+      <div class="wiki" style="display: block;"><i>Nuevo en v6.6.3</i>: También
+        es posible indicar sólo el nombre de la referencia en la condición, en
+        lugar de las propiedades calificadas de esa referencia. Es decir, puedes
+        usar simplemente <i>${almacen} = ?</i> en lugar de <i>${almacen.codigoZona}
+          = ? and ${almacen.codigo} = ?</i> en <i>condition</i>. Esto no es
+        sólo para clave múltiples, sino también para referencias con clave
+        simple, mira:</div>
+      <div class="wiki" style="display: block;">
+        <pre><code class="java">@DescriptionsList(
+    depends="familia", 
+    // condition="${familia.codigo} = ?" // Forma clásica
+    condition="${familia} = ?" // A partir de v6.6.3
+)
+</code></pre> </div>
+      <div class="wiki" style="display: block;">Fíjate, <i>${familia}</i> en
+        lugar de <i>${familia.codigo}</i>, aunque esto último todavía está
+        soportado.</div>
+    </div>
+    <div class="wiki" style="display: block;"> <em>Nuevo en v3.0.3:</em> Se
+      pueden usar propiedades calificadas en <em>condition</em> y <em>order</em>
+      incluso si no están incluidas en <em>descriptionProperties</em>. Es
+      decir, podemos escribir una condición como esta:<br>
       <style type="text/css"><!--
 /**
  * GeSHi (C) 2004 - 2007 Nigel McNie, 2007 - 2008 Benny Baumann

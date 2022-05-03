@@ -3,6 +3,9 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>View - OpenXava</title>
     <link rel="stylesheet" href="static/style.css" type="text/css">
+    <link rel="stylesheet" href="highlight/highlight.css">
+    <script src="highlight/highlight.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
   </head>
   <body>
     <div class="wiki" id="content_view" style="display: block;">
@@ -10467,13 +10470,68 @@ class="br0">)</span> @NoCreate <span class="co1">// 2</span>
       interface, this descriptions list is filled applying the <em>condition</em>
       condition (5) and sending as argument (to set value to ?) the new <em>family</em>
       value. And the entries are ordered descending by <em>description</em>
-      (6).<br>
-      In <em>condition</em> and <em>order</em> you put the property name
-      inside a <em>${}</em> and the arguments as <em>?</em>. The comparator
-      operators are the SQL operators.<br>
-      <em>New in v3.0.3:</em> Qualified properties are allowed for <em>condition</em>
-      and <em>order</em> even if they are not in <em>descriptionProperties</em>.
-      That is, you can write a condition like this:<br>
+      (6).</div>
+    <div class="wiki" style="display: block;"> In <em>condition</em> and <em>order</em>
+      you put the property name inside a <em>${}</em> and the arguments as <em>?</em>.
+      The comparator operators are the SQL operators.</div>
+    <div class="wiki" style="display: block;">In references where <i>@DescriptionsList</i>
+      depends on other <i>@DescriptionsList</i> with composite key, you can put
+      a ? for each key value. That is, if you have an <i>Warehouse</i> entity
+      like this:</div>
+    <div class="wiki" style="display: block;">
+      <pre><code class="java">@Entity @Getter @Setter
+@IdClass(WarehouseKey.class)
+public class Warehouse {
+
+    @Id 
+    int zoneNumber;
+
+    @Id 
+    int number;
+
+    @Column(length=40) @Required
+    String name;
+
+}
+</code></pre> </div>
+    <div class="wiki" style="display: block;">With composite key that includes <i>zoneNumber</i>
+      and <i>number</i>. Then in other entity you can have two <i>@DescriptionsLists</i>
+      like these:</div>
+    <div class="wiki" style="display: block;">
+      <pre><code class="java">@ManyToOne
+@DescriptionsList
+Warehouse mainWarehouse;
+	
+@ManyToOne
+@DescriptionsList(
+    depends="mainWarehouse", 
+    condition="${warehouse.zoneNumber} = ? and ${warehouse.number} = ?") <br>    // condition="${warehouse} = ?" // Since v6.6.3
+Carrier defaultCarrier;
+</code></pre> </div>
+    <div class="wiki" style="display: block;">Where <i>defaultCarrier</i>
+      depends on
+      <i> mainWarehouse</i> (with its composite key). The trick is to use two ?
+      and compare the two values of the key, <i>zoneNumber</i> and <i>number</i>
+      in <i>condition</i>.</div>
+    <div class="wiki" style="display: block;"><i>New in v6.6.3:</i> Also it's
+      possible to indicate only the reference name in the condition, instead of
+      the qualified properties of that reference. That is you can use just <i>${warehouse}
+        = ?</i> instead of <i>${warehouse.zoneNumber} = ? and
+        ${warehouse.number} = ?</i> in <i>condition</i>. This is not just for
+      composite keys, but for single key references too, see:</div>
+    <div class="wiki" style="display: block;">
+      <pre><code class="java">@DescriptionsList(
+    depends="family", 
+    // condition="${family.number} = ?" // Classic way
+    condition="${family} = ?" // Since v6.6.3
+)
+</code></pre> </div>
+    <div class="wiki" style="display: block;">Note <i>${family}</i> instead of
+      <i>${family.number}</i>, although the later is still supported.</div>
+    <div class="wiki" style="display: block;"><em>New in v3.0.3:</em> Qualified
+      properties are allowed for <em>condition</em> and <em>order</em> even if
+      they are not in <em>descriptionProperties</em>. That is, you can write a
+      condition like this:<br>
       <style type="text/css"><!--
 /**
  * GeSHi (C) 2004 - 2007 Nigel McNie, 2007 - 2008 Benny Baumann
