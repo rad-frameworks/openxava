@@ -1,0 +1,7 @@
+# https://stackoverflow.com/a/51429852/3957754
+# Ignore everything
+**
+
+# Allow files and directories
+!/entrypoint.sh
+!/@project@.dist/@project@.war

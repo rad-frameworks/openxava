@@ -21,25 +21,25 @@ import org.openxava.util.*;
 
 /**
  * @since 5.3
- * @author Javier Paniza 
+ * @author Javier Paniza
  */
 
 public class SchemaTool {
-	
-	private static Log log = LogFactory.getLog(SchemaTool.class);	
+
+	private static Log log = LogFactory.getLog(SchemaTool.class);
 	private boolean commitOnFinish = true;
-	private boolean onlySequences = false; 
+	private boolean onlySequences = false;
 	private Collection<Class> annotatedClasses = null;
-	
+
 	public static void main(String[] args) throws Exception {
 		if (args.length == 0 || Is.emptyString(args[0])) {
-			log.error(XavaResources.getString("schematool_action_required")); 
+			log.error(XavaResources.getString("schematool_action_required"));
 			return;
-		}				
+		}
 		if (args.length == 1 || Is.emptyString(args[1])) {
-			log.error(XavaResources.getString("schematool_persistence_unit_required")); 
+			log.error(XavaResources.getString("schematool_persistence_unit_required"));
 			return;
-		}	
+		}
 		XPersistence.setPersistenceUnit(args[1]);
 		SchemaTool tool = new SchemaTool();
 		String action = args[0];
@@ -50,33 +50,33 @@ public class SchemaTool {
     		tool.printSchema();
     	}
     	else {
-   			log.error(XavaResources.getString("schematool_action_required"));     		
-    	}	
+   			log.error(XavaResources.getString("schematool_action_required"));
+    	}
 		System.exit(0); // To avoid Eclipse hangs when executing Ant task
 	}
-	
+
 	public void updateSchema() {
 		execute(true, false);
 	}
-	
+
 	public void generateSchema() {
 		execute(false, false);
 	}
-	
+
 	public void printSchema() {
 		execute(false, true);
 	}
-	
-	private void execute(boolean update, boolean console) { 
+
+	private void execute(boolean update, boolean console) {
 		try {
 			Map<String, Object> factoryProperties = XPersistence.getManager().getEntityManagerFactory().getProperties();
-			
+
 			StandardServiceRegistryBuilder serviceRegistryBuilder =	new StandardServiceRegistryBuilder();
 			String [] properties = {
-				"hibernate.connection.driver_class", 	
-				"hibernate.dialect", 	
-				"hibernate.connection.url", 
-				"hibernate.default_catalog", 
+				"hibernate.connection.driver_class",
+				"hibernate.dialect",
+				"hibernate.connection.url",
+				"hibernate.default_catalog",
 				"hibernate.connection.datasource",
 			};
 			for (String property: properties) {
@@ -86,14 +86,14 @@ public class SchemaTool {
 				}
 			}
 
-			String schema = (String) factoryProperties.get("hibernate.default_catalog"); 
+			String schema = (String) factoryProperties.get("hibernate.default_catalog");
 			if (Is.emptyString(schema)) {
-				schema = (String) factoryProperties.get("hibernate.default_schema"); 
+				schema = (String) factoryProperties.get("hibernate.default_schema");
 				if (schema != null) {
-					serviceRegistryBuilder.applySetting("hibernate.default_schema", schema); 
+					serviceRegistryBuilder.applySetting("hibernate.default_schema", schema);
 				}
-			}			
-			
+			}
+
 			if (!Is.empty(factoryProperties.get("hibernate.connection.url"))) {
 				String username = PersistenceXml.getPropetyValue(XPersistence.getPersistenceUnit(), "hibernate.connection.username");
 				if (username != null) {
@@ -107,37 +107,43 @@ public class SchemaTool {
 
 			ServiceRegistry serviceRegistry = serviceRegistryBuilder.build();
 			MetadataSources metadata = new MetadataSources(serviceRegistry);
-			
+
 			if (annotatedClasses != null) {
 				for (Class annotatedClass: annotatedClasses) {
 					metadata.addAnnotatedClass(annotatedClass);
-				}						
+				}
 			}
 			else {
-				metadata.addResource("GalleryImage.hbm.xml");
+				if(System.getenv("ENABLE_GALLERY_IMAGE")!=null && System.getenv("ENABLE_GALLERY_IMAGE").contentEquals("true")){
+					log.info("gallery image is enabled");
+					metadata.addResource("GalleryImage.hbm.xml");
+				}else {
+					log.info("gallery image is disabled");
+				}
+
 				for (ManagedType type: XPersistence.getManager().getMetamodel().getManagedTypes()) {
 					Class<?> clazz = type.getJavaType();
 					if (clazz == null || clazz.isInterface()) continue;
 					metadata.addAnnotatedClass(clazz);
-				}		
+				}
 			}
-			
-	
+
+
 			String fileName = Files.getOpenXavaBaseDir() + "ddl-" + UUID.randomUUID() + ".sql";
 			File file = new File(fileName);
-			java.sql.Connection connection = ((SessionImpl) XPersistence.getManager().getDelegate()).connection(); 
+			java.sql.Connection connection = ((SessionImpl) XPersistence.getManager().getDelegate()).connection();
 	    	boolean supportsSchemasInIndexDefinitions = supportsSchemasInIndexDefinitions(connection);
-	    	XPersistence.commit();			
+	    	XPersistence.commit();
 	    	if (update) {
 				SchemaUpdate schemaUpdate = new SchemaUpdate();
 				schemaUpdate.setOutputFile(fileName);
 				schemaUpdate.execute(EnumSet.of(TargetType.SCRIPT), metadata.buildMetadata());
 				Collection<String> scripts = FileUtils.readLines(file);
 		    	for (String script: scripts) {
-		    		script = addSchema(script, supportsSchemasInIndexDefinitions, schema); 
+		    		script = addSchema(script, supportsSchemasInIndexDefinitions, schema);
 		    		log.info(XavaResources.getString("executing") + ": " + script);
 		    		try {
-		    			Query query = XPersistence.getManager().createNativeQuery(script); 
+		    			Query query = XPersistence.getManager().createNativeQuery(script);
 						query.executeUpdate();
 						XPersistence.commit();
 		    		}
@@ -146,7 +152,7 @@ public class SchemaTool {
 		    			XPersistence.rollback();
 		    		}
 		    	}
-		    	
+
 	    	}
 	    	else {
 				SchemaExport schemaExport = new SchemaExport();
@@ -155,14 +161,14 @@ public class SchemaTool {
 				Collection<String> scripts = FileUtils.readLines(file);
 				for (String script: scripts) {
 					if (onlySequences && !script.startsWith("create sequence ")) continue;
-					script = addSchema(script, supportsSchemasInIndexDefinitions, schema); 
+					script = addSchema(script, supportsSchemasInIndexDefinitions, schema);
 					if (console) {
-						System.out.print(script); 
+						System.out.print(script);
 						System.out.println(';');
 					}
 					else {
 						log.info(XavaResources.getString("executing") + ": " + script);
-						Query query = XPersistence.getManager().createNativeQuery(script);						
+						Query query = XPersistence.getManager().createNativeQuery(script);
 						query.executeUpdate();
 					}
 				}
@@ -178,16 +184,16 @@ public class SchemaTool {
 		}
 
 	}
-	
-	private boolean supportsSchemasInIndexDefinitions(Connection connection) throws SQLException { 
+
+	private boolean supportsSchemasInIndexDefinitions(Connection connection) throws SQLException {
 		DatabaseMetaData metaData = connection.getMetaData();
 		if ("PostgreSQL".equals(metaData.getDatabaseProductName())) return false;
 		return metaData.supportsSchemasInIndexDefinitions();
 	}
-	
-	private String addSchema(String script, boolean supportsSchemasInIndexDefinitions, String schema) { 
+
+	private String addSchema(String script, boolean supportsSchemasInIndexDefinitions, String schema) {
 		if (!supportsSchemasInIndexDefinitions || Is.emptyString(schema)) return script;
-		// Needed at least for AS/400 where supportsSchemasInIndexDefinitions is true 
+		// Needed at least for AS/400 where supportsSchemasInIndexDefinitions is true
 		// but the dialect does to prefix the FK on alter table, something that AS/400 requires
 		return script.replace("add constraint FK", "add constraint " + schema + ".FK");
 	}
@@ -201,8 +207,8 @@ public class SchemaTool {
 	}
 
 	public void addAnnotatedClass(Class annotatedClass) {
-		if (annotatedClasses == null) annotatedClasses = new ArrayList<Class>(); 
-		annotatedClasses.add(annotatedClass);		
+		if (annotatedClasses == null) annotatedClasses = new ArrayList<Class>();
+		annotatedClasses.add(annotatedClass);
 	}
 
 	/** @since 6.2.2 */
@@ -214,5 +220,5 @@ public class SchemaTool {
 	public void setOnlySequences(boolean onlySequences) {
 		this.onlySequences = onlySequences;
 	}
-	
+
 }

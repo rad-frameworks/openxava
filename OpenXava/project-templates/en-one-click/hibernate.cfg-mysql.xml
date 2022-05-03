@@ -1,0 +1,20 @@
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD//EN" "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<!-- This hibernate configuration is used only for report feature -->
+<hibernate-configuration>
+
+  <session-factory>
+
+    <property name="hibernate.jdbc.use_get_generated_keys">false</property>
+    <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+    <property name="hibernate.connection.url">jdbc:mysql://@database_host@:@database_port@/@database_name@</property>
+    <property name="hibernate.connection.username">@database_user@</property>
+    <property name="hibernate.connection.password">@database_password@</property>
+    <property name="hibernate.connection.pool_size">5</property>
+    <property name="hibernate.current_session_context_class">thread</property>
+    <property name="hibernate.show_sql">false</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+
+  </session-factory>
+
+</hibernate-configuration>

@@ -1,0 +1,49 @@
+  <target name="updateModel">
+    <delete failonerror="false">
+			<fileset dir="web/WEB-INF/classes/com/yourcompany/${project}/model">
+				<include name="*"/>
+			</fileset>
+		</delete>
+		<delete failonerror="false">
+			<fileset dir="src/com/yourcompany/${project}/model">
+				<include name="*"/>
+			</fileset>
+		</delete>
+      <exec dir="./hbm2java" executable="sh">
+          <arg line="-c 'mvn clean hibernate3:hbm2java'" />
+      </exec>
+  </target>
+
+  <target name="runJetty" depends="download-jetty-runner">
+      <exec dir="./server/jetty" executable="sh">
+          <arg line="-c 'java -jar jetty-runner-9.4.45.v20220203.jar --path /${project} ../../${project}.dist/${project}.war'" />
+      </exec>
+  </target>
+
+	<target name="check-jetty-runner">
+		<available file="./server/jetty/jetty-runner-9.4.45.v20220203.jar" property="jetty-runner.exist"/>
+	</target>
+
+  <target name="download-jetty-runner" depends="check-jetty-runner" unless="jetty-runner.exist">
+		<echo message="jetty-runner.exist=${jetty-runner.exist}"/>
+		<mkdir dir="./server/jetty"/>
+		<get dest="./server/jetty">
+			<url url="https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-runner/9.4.45.v20220203/jetty-runner-9.4.45.v20220203.jar"/>
+		</get>
+	</target>
+
+  <target name="runDocker" depends="download-jetty-runner">
+		<exec dir="." executable="sh">
+			<arg line="-c 'docker rm -f ${project}'"/>
+		</exec>
+		<echo message="build" />
+		<exec dir="." executable="sh">
+			<arg line="-c 'docker build -t ${project} .'"/>
+		</exec>
+		<echo message="run" />
+		<exec dir="." executable="sh">
+			<arg line=" -c 'docker run -e JAVA_RAM_INI=-Xms256m -e JAVA_RAM_MAX=-Xmx512m -d --name ${project} -p 8080:8080 ${project}'"/>
+		</exec>
+	</target>
+
+</project>
